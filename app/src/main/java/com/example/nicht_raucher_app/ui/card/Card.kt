@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.SmokingRooms
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,37 +16,36 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Farbpalette im Eloqwnt-Stil
-val CardBackground = Color(0xFFF7F7F7) // Sehr helles Grau/Off-white
-val PrimaryAccent = Color(0xFF1A1A1A) // Tiefes Schwarz für Texte
-val SecondaryText = Color(0xFF8E8E93) // iOS-Style Grau
-val SuccessGreen = Color(0xFF4ADE80) // Ein frisches Grün für Fortschritt
+// Farben passend zum Eloqwnt-Stil
+val LightBackground = Color(0xFFF2F2F7)
+val CardWhite = Color(0xFFFFFFFF)
+val AccentTeal = Color(0xFF2DD4BF)
+val TextPrimary = Color(0xFF1C1C1E)
+val TextSecondary = Color(0xFF8E8E93)
 
 @Composable
-fun SobrietyCard(
-    habitName: String = "Rauchfrei",
-    days: Int = 14,
-    moneySaved: String = "84,50 €",
-    icon: ImageVector = Icons.Default.SmokingRooms
+fun ModernAbstinenceCard(
+    tage: Long,
+    geld: Double,
+    zigaretten: Int
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Flacher Look wie im Beispiel
     ) {
         Column(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-            // Header: Icon und Titel
+            // HEADER: Icon & Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -54,80 +54,79 @@ fun SobrietyCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(42.dp)
                             .clip(CircleShape)
-                            .background(CardBackground),
+                            .background(LightBackground),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = icon,
+                            imageVector = Icons.Filled.Timer,
                             contentDescription = null,
-                            tint = PrimaryAccent,
+                            tint = TextPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = habitName,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PrimaryAccent
+                        text = "Rauchfrei",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
                     )
                 }
 
-                // Status Badge (Grüner Punkt für "Aktiv")
+                // Status Badge
                 Surface(
-                    shape = CircleShape,
-                    color = SuccessGreen.copy(alpha = 0.1f),
-                    modifier = Modifier.size(32.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    color = AccentTeal.copy(alpha = 0.15f)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(SuccessGreen)
-                        )
-                    }
+                    Text(
+                        text = "Läuft",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        color = AccentTeal,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Haupt-Statistik (Die großen Tage)
+            // MAIN STAT: TAGE
             Column {
                 Text(
-                    text = "$days Tage",
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-1).sp,
-                    color = PrimaryAccent
+                    text = "$tage Tage",
+                    fontSize = 56.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-2).sp,
+                    color = TextPrimary,
+                    lineHeight = 50.sp
                 )
                 Text(
-                    text = "Glückwunsch! Du hälst durch.",
-                    fontSize = 14.sp,
-                    color = SecondaryText
+                    text = "Glückwunsch zum Erfolg!",
+                    fontSize = 15.sp,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
-            // Footer: Sub-Stats (Bento-Stil)
+            // BENTO FOOTER: Geld & Zigaretten
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Info Box 1: Ersparnis
-                InfoSmallBox(
-                    label = "Gespart",
-                    value = moneySaved,
+                BentoStat(
+                    label = "Ersparnis",
+                    value = String.format("%.2f €", geld),
+                    icon = Icons.Default.Euro,
                     modifier = Modifier.weight(1f)
                 )
-                // Info Box 2: Gesundheit/Trend
-                InfoSmallBox(
-                    label = "Status",
-                    value = "Verbessert",
-                    icon = Icons.Default.TrendingUp,
+                BentoStat(
+                    label = "Vermieden",
+                    value = "$zigaretten Stk.",
+                    icon = Icons.Default.SmokingRooms,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -136,42 +135,36 @@ fun SobrietyCard(
 }
 
 @Composable
-fun InfoSmallBox(
+fun BentoStat(
     label: String,
     value: String,
-    icon: ImageVector? = null,
+    icon: ImageVector,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(CardBackground)
+            .clip(RoundedCornerShape(24.dp))
+            .background(LightBackground)
             .padding(16.dp)
     ) {
-        Text(text = label, fontSize = 12.sp, color = SecondaryText)
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = SuccessGreen
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
-            Text(
-                text = value,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryAccent
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = TextPrimary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = TextSecondary,
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
     }
-}
-
-@Preview
-@Composable
-private fun test() {
-    SobrietyCard()
 }

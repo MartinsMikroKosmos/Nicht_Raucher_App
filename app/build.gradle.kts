@@ -88,6 +88,9 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.androidx.work.runtime.ktx)
 
+    // UI Elements
+    implementation(libs.androidx.material.icons.extended)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

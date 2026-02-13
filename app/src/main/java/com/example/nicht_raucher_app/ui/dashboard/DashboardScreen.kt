@@ -1,88 +1,52 @@
 package com.example.nicht_raucher_app.ui.dashboard
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nicht_raucher_app.domain.Habit
 import com.example.nicht_raucher_app.util.TimeUtils
 
-
 /**
- * Das Dashboard mit modernem Design und Animationen.
+ * Das Dashboard zeigt die Liste deiner aktiven Timer.
+ * Es nutzt das ViewModel, um Daten persistent aus Room zu laden.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
-    // Diese Zeilen funktionieren jetzt, da die Imports oben korrigiert wurden
     val habits by viewModel.habits.collectAsState()
-    val currentTime by viewModel.ticker.collectAsState()
+    val tickerTime by viewModel.ticker.collectAsState()
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = "Übersicht",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(vertical = 24.dp)
+        )
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            LargeTopAppBar(
-                title = { Text("Mein Weg", fontWeight = FontWeight.Bold) },
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { padding ->
         if (habits.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Klicke auf +, um einen Timer zu starten", color = MaterialTheme.colorScheme.outline)
-            }
+            EmptyDashboardState()
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 100.dp) // Platz für den FAB
             ) {
                 items(habits, key = { it.id }) { habit ->
-                    HabitCard(habit = habit, currentTime = currentTime)
+                    HabitCard(habit = habit, tickerTime = tickerTime)
                 }
             }
         }
@@ -90,68 +54,95 @@ fun DashboardScreen(
 }
 
 @Composable
-fun HabitCard(habit: Habit, currentTime: Long) {
+fun HabitCard(habit: Habit, tickerTime: Long) {
+    // Nutzt jetzt korrekt getElapsedDuration aus deinen TimeUtils
     val duration = TimeUtils.getElapsedDuration(habit.startTimeMillis)
 
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(20.dp)
         ) {
-            Text(
-                text = habit.label,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Animierte Zeitanzeige
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TimeUnitDisplay(value = duration.days, label = "Tage")
-                TimeUnitDisplay(value = duration.hours, label = "Std")
-                TimeUnitDisplay(value = duration.minutes, label = "Min")
-                TimeUnitDisplay(value = duration.seconds, label = "Sek")
+                Text(
+                    text = habit.label,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                // Status Badge
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        text = "Aktiv",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Der Zeit-Ticker mit den Daten aus TimeDisplay
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TimeDisplayUnit(duration.days, "Tage")
+                TimeDisplayUnit(duration.hours, "Std")
+                TimeDisplayUnit(duration.minutes, "Min")
+                TimeDisplayUnit(duration.seconds, "Sek")
             }
         }
     }
 }
 
 @Composable
-fun TimeUnitDisplay(value: Long, label: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
+fun TimeDisplayUnit(value: Long, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         AnimatedContent(
             targetState = value,
             transitionSpec = {
-                (slideInVertically { it } + fadeIn())
-                    .togetherWith(slideOutVertically { -it } + fadeOut())
-            }, label = "TimeAnimation"
-        ) { animatedValue ->
+                (slideInVertically { it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut())
+            }, label = "TimeTicker"
+        ) { targetValue ->
             Text(
-                text = animatedValue.toString().padStart(2, '0'),
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 32.sp
+                text = targetValue.toString().padStart(2, '0'),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             )
         }
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.outline
         )
     }
 }
 
+@Composable
+fun EmptyDashboardState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            "Keine Timer vorhanden.\nDrücke auf das Plus!",
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = MaterialTheme.colorScheme.outline
+        )
+    }
+}

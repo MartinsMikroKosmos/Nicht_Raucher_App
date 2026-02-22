@@ -10,11 +10,13 @@ class HabitRepositoryImpl @Inject constructor(
 ) : Repository {
     override fun getAllHabits(): Flow<List<Habit>> = dao.getAllHabits()
 
-    override suspend fun insertHabit(habit: Habit) {
-        dao.insertHabit(habit)
-    }
+    override suspend fun insertHabit(habit: Habit) = dao.insertHabit(habit)
 
-    override suspend fun deleteHabit(habit: Habit) {
-        dao.deleteHabit(habit)
+    override suspend fun deleteHabit(habit: Habit) = dao.deleteHabit(habit)
+
+    override suspend fun updateHabitOrder(orderedHabits: List<Habit>) {
+        orderedHabits.forEachIndexed { index, habit ->
+            dao.updateHabit(habit.copy(position = index))
+        }
     }
 }

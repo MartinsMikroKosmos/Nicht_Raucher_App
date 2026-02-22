@@ -8,6 +8,9 @@ data class Habit(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val label: String,
     val startTimeMillis: Long,
-    val cigarettesPerDay: Int,
-    val packPrice: Double
+    val unitsPerDay: Double,    // z.B. 20.0 Zigaretten, 5.0 Drinks, 3.0 Joints
+    val costPerUnit: Double,    // Kosten pro Einheit in €
+    val unitName: String,       // z.B. "Zigaretten", "Bier", "Joints", "Selbstgedrehte"
+    val cardColor: Int,         // ARGB-Farbwert der Karte
+    val position: Int = 0      // Reihenfolge im Dashboard
 )

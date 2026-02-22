@@ -7,12 +7,21 @@ import javax.inject.Inject
 class AddHabitUseCase @Inject constructor(
     private val repository: Repository
 ) {
-    suspend operator fun invoke(label: String, cigsPerDay: Int, packPrice: Double) {
+    suspend operator fun invoke(
+        label: String,
+        unitsPerDay: Double,
+        costPerUnit: Double,
+        unitName: String,
+        cardColor: Int,
+        startTimeMillis: Long = System.currentTimeMillis()
+    ) {
         val newHabit = Habit(
             label = label,
-            startTimeMillis = System.currentTimeMillis(),
-            cigarettesPerDay = cigsPerDay,
-            packPrice = packPrice
+            startTimeMillis = startTimeMillis,
+            unitsPerDay = unitsPerDay,
+            costPerUnit = costPerUnit,
+            unitName = unitName,
+            cardColor = cardColor
         )
         repository.insertHabit(newHabit)
     }

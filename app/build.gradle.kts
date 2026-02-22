@@ -1,5 +1,3 @@
-import org.apache.groovy.json.internal.Exceptions.die
-
 // Pfad: /app/build.gradle.kts
 
 plugins {
@@ -86,6 +84,7 @@ dependencies {
 
     // Misc
     implementation(libs.lottie.compose)
+    implementation(libs.reorderable)
     implementation(libs.androidx.work.runtime.ktx)
 
     // UI Elements

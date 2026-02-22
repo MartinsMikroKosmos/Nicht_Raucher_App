@@ -15,10 +15,11 @@ import java.util.Calendar
 import javax.inject.Inject
 
 // Voreingestellte metallische Farben (ARGB)
+// Hinweis: Textfarbe wird automatisch per WCAG-Kontrast berechnet (contentColorFor)
 val metallicPresets = listOf(
-    // Klassische Metalle
-    0xFFC0C0C0.toInt() to "Silber",
-    0xFFFFD700.toInt() to "Gold",
+    // Klassische Metalle – etwas gesättigter für besseren Kontrast
+    0xFF9E9E9E.toInt() to "Silber",       // Dunkler als reines Silber → Text bleibt lesbar
+    0xFFB8860B.toInt() to "Gold",          // Dunkelgold statt reinem Gelb
     0xFFCD7F32.toInt() to "Bronze",
     0xFFB87333.toInt() to "Kupfer",
     0xFFB76E79.toInt() to "Rosé",
@@ -39,7 +40,7 @@ val metallicPresets = listOf(
     0xFF8B0000.toInt() to "Dunkelrot",
     // Warme Töne
     0xFF20B2AA.toInt() to "Türkis",
-    0xFFFF8C00.toInt() to "Bernstein",
+    0xFFE65100.toInt() to "Bernstein",     // Kräftiger als 0xFF8C00 → mehr Kontrast
     0xFF5D4037.toInt() to "Mokka",
     // Dunkel
     0xFF37474F.toInt() to "Anthrazit",

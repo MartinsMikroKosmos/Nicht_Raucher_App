@@ -181,7 +181,7 @@ fun DashboardScreen(
                             )
                             Text(
                                 text = name,
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodySmall,
                                 fontWeight = if (editColor == colorInt) FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -314,7 +314,7 @@ fun DashboardScreen(
                                             imageVector = Icons.Filled.Menu,
                                             contentDescription = "Verschieben",
                                             modifier = Modifier.draggableHandle(),
-                                            tint = Color.White.copy(alpha = 0.7f)
+                                            tint = contentColorFor(Color(habit.cardColor)).copy(alpha = 0.7f)
                                         )
                                     }
                                 )
@@ -328,28 +328,35 @@ fun DashboardScreen(
 }
 
 private fun metallicBrush(baseColor: Color): Brush {
+    // Helligkeit berechnen um Highlight-Intensität anzupassen
+    val lum = 0.2126f * baseColor.red + 0.7152f * baseColor.green + 0.0722f * baseColor.blue
+    // Helle Farben (Gold, Silber): weniger aggressiver Highlight, mehr Tiefe
+    // Dunkle Farben (Nachtblau): stärkerer Highlight für sichtbaren Glanz
+    val highlightFactor = if (lum > 0.5f) 1.35f else 1.7f
+    val shadowFactor    = if (lum > 0.5f) 0.55f else 0.45f
+
     val highlight = Color(
-        red = (baseColor.red * 1.7f).coerceAtMost(1f),
-        green = (baseColor.green * 1.7f).coerceAtMost(1f),
-        blue = (baseColor.blue * 1.7f).coerceAtMost(1f),
+        red   = (baseColor.red   * highlightFactor).coerceAtMost(1f),
+        green = (baseColor.green * highlightFactor).coerceAtMost(1f),
+        blue  = (baseColor.blue  * highlightFactor).coerceAtMost(1f),
         alpha = 1f
     )
     val midLight = Color(
-        red = (baseColor.red * 1.25f).coerceAtMost(1f),
-        green = (baseColor.green * 1.25f).coerceAtMost(1f),
-        blue = (baseColor.blue * 1.25f).coerceAtMost(1f),
+        red   = (baseColor.red   * 1.15f).coerceAtMost(1f),
+        green = (baseColor.green * 1.15f).coerceAtMost(1f),
+        blue  = (baseColor.blue  * 1.15f).coerceAtMost(1f),
         alpha = 1f
     )
     val shadow = Color(
-        red = baseColor.red * 0.45f,
-        green = baseColor.green * 0.45f,
-        blue = baseColor.blue * 0.45f,
+        red   = baseColor.red   * shadowFactor,
+        green = baseColor.green * shadowFactor,
+        blue  = baseColor.blue  * shadowFactor,
         alpha = 1f
     )
     return Brush.linearGradient(
         colors = listOf(shadow, baseColor, highlight, midLight, baseColor, shadow),
         start = Offset(0f, 0f),
-        end = Offset(900f, 600f)
+        end   = Offset(900f, 600f)
     )
 }
 
@@ -359,7 +366,10 @@ private fun contentColorFor(baseColor: Color): Color {
     val g = linearize(baseColor.green)
     val b = linearize(baseColor.blue)
     val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
-    return if (luminance > 0.35f) Color(0xFF1A1A1A) else Color.White
+    // WCAG: Vergleiche Kontrastverhältnis Weiß vs. Schwarz – nimm den besseren Wert
+    val contrastWithWhite = 1.05f / (luminance + 0.05f)
+    val contrastWithBlack = (luminance + 0.05f) / 0.05f
+    return if (contrastWithWhite >= contrastWithBlack) Color.White else Color(0xFF1A1A1A)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -405,7 +415,7 @@ fun HabitCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(brush = brush)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 18.dp)
         ) {
             Column {
 
@@ -423,11 +433,11 @@ fun HabitCard(
                     ) {
                         Text(
                             text = substanceEmoji,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleLarge
                         )
                         Text(
                             text = habit.label,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = textColor,
                             maxLines = 1,
@@ -441,8 +451,8 @@ fun HabitCard(
                             text = "${duration.days}T " +
                                    "${duration.hours.toString().padStart(2, '0')}h " +
                                    "${duration.minutes.toString().padStart(2, '0')}m",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
                             color = textColor.copy(alpha = 0.90f),
                             modifier = Modifier.padding(horizontal = 8.dp)
                         )
@@ -517,39 +527,39 @@ fun HabitCard(
                             Column {
                                 Text(
                                     text = "$unitsAvoided",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "${habit.unitName} vermieden",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = timeSavedText,
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "Zeit gewonnen",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = "%.2f €".format(moneySaved),
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "gespart",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
@@ -563,13 +573,13 @@ fun HabitCard(
                         mp.lastReachedMilestone?.let { last ->
                             Text(
                                 text = "✅ ${last.title}",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = textColor.copy(alpha = 0.9f)
                             )
                             Text(
                                 text = last.medicalBenefit,
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = textColor.copy(alpha = 0.85f)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
@@ -579,7 +589,7 @@ fun HabitCard(
                         mp.nextMilestone?.let { next ->
                             Text(
                                 text = "🎯 Nächstes Ziel: ${next.title}",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = textColor
                             )
@@ -593,14 +603,14 @@ fun HabitCard(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "💬 ${next.motivationQuote}",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = textColor.copy(alpha = 0.85f),
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         } ?: Text(
                             text = "Alle Meilensteine erreicht! 👑",
-                            style = MaterialTheme.typography.labelSmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = textColor.copy(alpha = 0.85f)
                         )
                     }
@@ -623,7 +633,7 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
             Text(
                 text = targetValue.toString().padStart(2, '0'),
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 26.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.ExtraBold,
                     shadow = Shadow(
                         color = Color.Black.copy(alpha = 0.3f),
@@ -636,7 +646,7 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = textColor.copy(alpha = 0.90f)
         )
     }

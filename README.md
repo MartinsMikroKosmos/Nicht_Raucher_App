@@ -5,6 +5,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![API](https://img.shields.io/badge/API-26%2B-brightgreen?logo=android)](https://developer.android.com)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![CI](https://github.com/MartinsMikroKosmos/Nicht_Raucher_App/actions/workflows/android_ci.yml/badge.svg)](https://github.com/MartinsMikroKosmos/Nicht_Raucher_App/actions/workflows/android_ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 PureProgress is a modern Android abstinence tracker for any habit — cigarettes, alcohol, cannabis, coffee, sugar and more. It visualises your progress with metallic cards, substance-specific milestones and push notifications to keep you motivated every step of the way.
@@ -26,7 +27,7 @@ PureProgress is a modern Android abstinence tracker for any habit — cigarettes
 ## Features
 
 - 🃏 **Collapsible Metallic Cards** — Collapsed shows name, substance emoji and compact time; expanded reveals full stats and milestone details
-- 🎨 **20 Colour Themes** — Metallic presets (Silver, Gold, Bronze, Cobalt, Emerald, Anthracite and more) with WCAG-compliant contrast
+- 🎨 **20 Colour Themes** — Metallic presets (Silver, Gold, Bronze, Cobalt, Emerald, Anthracite and more); text colour is chosen automatically using true WCAG contrast-ratio comparison (white vs. black), adaptive metallic shimmer adjusts highlight intensity per colour brightness
 - 🧪 **10 Substance Types** — Cigarettes, Tobacco, Alcohol, Cannabis, Coffee, Sugar, Energy Drinks, Gambling, Social Media, Custom
 - 🏆 **Substance-Specific Milestones** — Each type has tailored milestones with medical benefits and motivation quotes
 - 🔔 **Push Notifications** — WorkManager fires a notification at every milestone, even when the app is closed

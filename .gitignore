@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# KI-Spezifikation – nur lokal
+claude.md

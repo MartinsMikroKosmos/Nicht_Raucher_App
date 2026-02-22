@@ -14,7 +14,13 @@ PureProgress is a modern Android abstinence tracker for any habit — cigarettes
 
 ## Screenshots
 
-> Screenshots coming soon — place `dashboard.png`, `expanded_card.png` and `add_habit.png` in the `screenshots/` folder.
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/dashboard.png" width="250" alt="Dashboard"/><br/><sub>Dashboard</sub></td>
+    <td align="center"><img src="screenshots/expanded_card.png" width="250" alt="Expanded Card"/><br/><sub>Expanded Card</sub></td>
+    <td align="center"><img src="screenshots/add_habit.png" width="250" alt="Add Habit"/><br/><sub>Add Habit</sub></td>
+  </tr>
+</table>
 
 ---
 

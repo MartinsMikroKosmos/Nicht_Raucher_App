@@ -4,31 +4,34 @@ Ein moderner Begleiter für jeden Abstinenz-Prozess. Die App hilft Nutzern dabei
 
 ## 🎯 Über das Projekt
 
-Egal ob Rauchen, Trinken oder eine andere Gewohnheit: Der Weg zur Abstinenz ist schwer. Diese App visualisiert, was man bereits erreicht hat – gespartes Geld, vermiedene Einheiten, körperliche Regeneration – und hält die Motivation hoch.
+Egal ob Rauchen, Trinken oder eine andere Gewohnheit: Der Weg zur Abstinenz ist schwer. Diese App visualisiert, was man bereits erreicht hat – gespartes Geld, vermiedene Einheiten, gewonnene Lebenszeit, körperliche Regeneration – und hält die Motivation hoch.
 
 ## ✨ Funktionen (Features)
 
-* **Multi-Sucht-Tracking**: Unterstützt beliebige Substanzen und Gewohnheiten – Zigaretten, Selbstgedrehte, Bier, Wein, Schnaps, Joints, Glücksspiel und mehr.
-* **Live-Timer**: Präziser Sekundencounter (Tage · Stunden · Minuten · Sekunden) mit animiertem Update.
-* **Ersparnis-Ticker**: Zeigt sekundengenau das gesparte Geld auf Basis von Einheiten/Tag × Kosten/Einheit.
-* **Einheiten-Statistik**: Wie viele Einheiten wurden seitdem vermieden?
-* **Metallic Cards**: Jede Karte hat eine individuell wählbare metallische Farbe (Silber, Gold, Bronze, Kupfer, Rosé, Stahlblau, Lila, Smaragd, Rubin, Türkis).
+* **SubstanceType-System**: 10 vordefinierte Suchttypen (Zigaretten, Selbstgedrehte, Alkohol, Cannabis, Kaffee, Zucker, Energy Drinks, Glücksspiel, Social Media, Eigene Eingabe) mit jeweils substanzspezifischen Meilensteinen.
+* **Live-Timer**: Präziser Sekundencounter (Tage · Stunden · Minuten · Sekunden) mit animiertem Update und Textschatten für optimale Lesbarkeit.
+* **3-Spalten-Statistik**: Vermiedene Einheiten · Gewonnene Lebenszeit · Gespartes Geld – sekundengenau berechnet.
+* **Substanzspezifische Meilensteine**: Medizinische Benefits und Motivationssprüche je nach Suchttyp (z. B. andere Milestones für Zigaretten vs. Alkohol vs. Cannabis).
+* **Milestone-Fortschrittsbalken**: Letzter erreichter Meilenstein mit medizinischem Benefit + Fortschrittsbalken zum nächsten Ziel + Motivationsspruch direkt auf der Card.
+* **Push-Notifications**: WorkManager löst automatisch Benachrichtigungen bei jedem Meilenstein aus.
+* **Metallic Cards**: Jede Karte hat eine individuell wählbare metallische Farbe (Silber, Gold, Bronze, Kupfer, Rosé, Stahlblau, Lila, Smaragd, Rubin, Türkis) mit WCAG-konformem Kontrast.
 * **Dashboard-Interaktion**: Karten per Drag & Drop umsortieren, per Links-Wisch löschen.
-* **Gamification**: Belohnungssystem mit Meilensteinen (24h, 3 Tage, 1 Woche, 1 Monat, 100 Tage) – geplant.
-* **Gesundheits-Daten**: Zeitbasierte Körper-Regenerations-Infos je nach Suchttyp – geplant.
+* **Datumvalidierung**: Startzeit in der Zukunft wird mit Warnung blockiert.
+* **Dynamischer Kostentipp**: Hint im Formular passt sich je nach gewählter Einheit an.
 
 ## 🛠 Tech Stack
 
 | Bereich | Technologie |
-|---|---|
+| --- | --- |
 | Sprache | Kotlin 2.1 |
 | UI | Jetpack Compose + Material 3 |
 | Architektur | Clean Architecture + MVVM |
 | Dependency Injection | Hilt / Dagger |
-| Datenbank | Room (SQLite) mit Flow / StateFlow |
+| Datenbank | Room (SQLite) v4 mit Flow / StateFlow + Migration |
 | Navigation | Jetpack Navigation Compose |
-| Drag & Drop | sh.calvin.reorderable |
-| Animation | Compose Animations + Lottie |
+| Drag & Drop | sh.calvin.reorderable 2.4.0 |
+| Animation | Compose Animations |
+| Notifications | WorkManager + Hilt Worker |
 | Min SDK | 26 (Android 8.0) |
 | Target SDK | 35 (Android 15) |
 
@@ -46,14 +49,13 @@ app/src/main/java/com/example/nicht_raucher_app/
 │   ├── add_habit/
 │   │   ├── AddHabitScreen.kt
 │   │   └── AddHabitViewModel.kt
-│   ├── card/
-│   │   └── Card.kt
 │   └── theme/
-│       ├── Color.kt
+│       ├── Color.kt          (Teal/Indigo-Schema)
 │       ├── Theme.kt
 │       └── Type.kt
 ├── domain/
-│   ├── Habit.kt
+│   ├── Habit.kt              (inkl. substanceType)
+│   ├── SubstanceType.kt      (Enum: 10 Suchttypen)
 │   ├── Repository.kt
 │   └── use_case/
 │       ├── GetHabitsUseCase.kt
@@ -62,12 +64,19 @@ app/src/main/java/com/example/nicht_raucher_app/
 │       └── UpdateHabitOrderUseCase.kt
 ├── data/
 │   ├── HabitDao.kt
-│   ├── HabitDatabase.kt
+│   ├── HabitDatabase.kt      (v4 + MIGRATION_3_4)
 │   └── HabitRepositoryImpl.kt
+├── milestones/
+│   ├── Milestone.kt          (medicalBenefit + motivationQuote)
+│   ├── MilestoneData.kt      (substanzspezifische Listen)
+│   └── MilestoneScheduler.kt
+├── worker/
+│   └── MilestoneWorker.kt
 ├── di/
 │   └── AppModule.kt
 └── util/
     ├── TimeUtils.kt
+    ├── MilestoneUtils.kt     (calculateProgress + MilestoneProgress)
     └── AppConfig.kt
 ```
 

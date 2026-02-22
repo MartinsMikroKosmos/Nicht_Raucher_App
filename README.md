@@ -1,107 +1,148 @@
-# 🧠 PureProgress
+# PureProgress
 
-Ein moderner Begleiter für jeden Abstinenz-Prozess. Die App hilft Nutzern dabei, jede Art von Sucht zu überwinden – Zigaretten, Alkohol, Cannabis, Glücksspiel und mehr – und macht Fortschritte durch positive Bestärkung sichtbar.
+> Track your freedom. One day at a time.
 
-## 🎯 Über das Projekt
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![API](https://img.shields.io/badge/API-26%2B-brightgreen?logo=android)](https://developer.android.com)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
-Egal ob Rauchen, Trinken oder eine andere Gewohnheit: Der Weg zur Abstinenz ist schwer. Diese App visualisiert, was man bereits erreicht hat – gespartes Geld, vermiedene Einheiten, gewonnene Lebenszeit, körperliche Regeneration – und hält die Motivation hoch.
+PureProgress is a modern Android abstinence tracker for any habit — cigarettes, alcohol, cannabis, coffee, sugar and more. It visualises your progress with metallic cards, substance-specific milestones and push notifications to keep you motivated every step of the way.
 
-## ✨ Funktionen (Features)
+---
 
-* **SubstanceType-System**: 10 vordefinierte Suchttypen (Zigaretten, Selbstgedrehte, Alkohol, Cannabis, Kaffee, Zucker, Energy Drinks, Glücksspiel, Social Media, Eigene Eingabe) mit jeweils substanzspezifischen Meilensteinen.
-* **Live-Timer**: Präziser Sekundencounter (Tage · Stunden · Minuten · Sekunden) mit animiertem Update und Textschatten für optimale Lesbarkeit.
-* **3-Spalten-Statistik**: Vermiedene Einheiten · Gewonnene Lebenszeit · Gespartes Geld – sekundengenau berechnet.
-* **Substanzspezifische Meilensteine**: Medizinische Benefits und Motivationssprüche je nach Suchttyp (z. B. andere Milestones für Zigaretten vs. Alkohol vs. Cannabis).
-* **Milestone-Fortschrittsbalken**: Letzter erreichter Meilenstein mit medizinischem Benefit + Fortschrittsbalken zum nächsten Ziel + Motivationsspruch direkt auf der Card.
-* **Push-Notifications**: WorkManager löst automatisch Benachrichtigungen bei jedem Meilenstein aus.
-* **Metallic Cards**: Jede Karte hat eine individuell wählbare metallische Farbe (Silber, Gold, Bronze, Kupfer, Rosé, Stahlblau, Lila, Smaragd, Rubin, Türkis) mit WCAG-konformem Kontrast.
-* **Dashboard-Interaktion**: Karten per Drag & Drop umsortieren, per Links-Wisch löschen.
-* **Datumvalidierung**: Startzeit in der Zukunft wird mit Warnung blockiert.
-* **Dynamischer Kostentipp**: Hint im Formular passt sich je nach gewählter Einheit an.
+## Screenshots
 
-## 🛠 Tech Stack
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/dashboard.png" width="250"/><br/><sub>Dashboard</sub></td>
+    <td align="center"><img src="screenshots/expanded_card.png" width="250"/><br/><sub>Expanded Card</sub></td>
+    <td align="center"><img src="screenshots/add_habit.png" width="250"/><br/><sub>Add Habit</sub></td>
+  </tr>
+</table>
 
-| Bereich | Technologie |
+---
+
+## Features
+
+- 🃏 **Collapsible Metallic Cards** — Collapsed shows name, substance emoji and compact time; expanded reveals full stats and milestone details
+- 🎨 **20 Colour Themes** — Metallic presets (Silver, Gold, Bronze, Cobalt, Emerald, Anthracite and more) with WCAG-compliant contrast
+- 🧪 **10 Substance Types** — Cigarettes, Tobacco, Alcohol, Cannabis, Coffee, Sugar, Energy Drinks, Gambling, Social Media, Custom
+- 🏆 **Substance-Specific Milestones** — Each type has tailored milestones with medical benefits and motivation quotes
+- 🔔 **Push Notifications** — WorkManager fires a notification at every milestone, even when the app is closed
+- ⏱️ **Live Timer** — Animated second-by-second counter (Days · Hours · Minutes · Seconds) with text shadow for readability
+- 💰 **3-Column Stats** — Units avoided · Time reclaimed · Money saved — all updated in real time
+- 📈 **Milestone Progress Bar** — Visual progress towards the next milestone with the last achievement and its medical benefit
+- 🔀 **Drag & Drop Reorder** — Long-press the ☰ handle to rearrange cards; order is persisted in Room
+- ↔️ **Swipe-to-Delete with Confirmation** — Swipe left, confirm in a dialog — no accidental deletions
+- ✏️ **Edit via Long Press** — Tap and hold a card to rename it or change its colour in a bottom sheet
+- 💾 **JSON Backup & Restore** — Export all habits to a JSON file in Downloads; re-import on any device
+- 🌙 **Dark Mode** — Custom Teal/Indigo Material 3 theme, no dynamic colour
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
 | --- | --- |
-| Sprache | Kotlin 2.1 |
+| Language | Kotlin 2.1 |
 | UI | Jetpack Compose + Material 3 |
-| Architektur | Clean Architecture + MVVM |
+| Architecture | Clean Architecture + MVVM |
 | Dependency Injection | Hilt / Dagger |
-| Datenbank | Room (SQLite) v4 mit Flow / StateFlow + Migration |
+| Database | Room v4 (SQLite) with Flow / StateFlow |
 | Navigation | Jetpack Navigation Compose |
 | Drag & Drop | sh.calvin.reorderable 2.4.0 |
-| Animation | Compose Animations |
 | Notifications | WorkManager + Hilt Worker |
 | Min SDK | 26 (Android 8.0) |
 | Target SDK | 35 (Android 15) |
 
-## 🏗 Projektstruktur
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Android Studio** Hedgehog (2023.1.1) or newer
+- **JDK 17**
+
+### Installation
+
+```bash
+git clone https://github.com/MartinsMikroKosmos/Nicht_Raucher_App.git
+```
+
+1. Open the project in Android Studio.
+2. Wait for the Gradle sync to complete.
+3. Run on an emulator or a device running Android 8.0+:
+
+```bash
+./gradlew installDebug
+```
+
+---
+
+## Architecture
+
+PureProgress follows **Clean Architecture** with an **MVVM** presentation layer.
 
 ```
 app/src/main/java/com/example/nicht_raucher_app/
-├── ui/
-│   ├── MainActivity.kt
-│   ├── navigation/
-│   │   └── AppNavigation.kt
-│   ├── dashboard/
-│   │   ├── DashboardScreen.kt
-│   │   └── DashboardViewModel.kt
-│   ├── add_habit/
-│   │   ├── AddHabitScreen.kt
-│   │   └── AddHabitViewModel.kt
-│   └── theme/
-│       ├── Color.kt          (Teal/Indigo-Schema)
-│       ├── Theme.kt
-│       └── Type.kt
-├── domain/
-│   ├── Habit.kt              (inkl. substanceType)
-│   ├── SubstanceType.kt      (Enum: 10 Suchttypen)
-│   ├── Repository.kt
-│   └── use_case/
-│       ├── GetHabitsUseCase.kt
-│       ├── AddHabitUseCase.kt
-│       ├── DeleteHabitUseCase.kt
-│       └── UpdateHabitOrderUseCase.kt
-├── data/
+├── ui/                        Presentation (Compose + ViewModels)
+│   ├── navigation/            NavGraph
+│   ├── dashboard/             DashboardScreen + DashboardViewModel
+│   ├── add_habit/             AddHabitScreen + AddHabitViewModel
+│   └── theme/                 Color, Theme, Type
+├── domain/                    Business Logic
+│   ├── Habit.kt               Room Entity
+│   ├── SubstanceType.kt       Enum: 10 substance types
+│   ├── Repository.kt          Interface
+│   └── use_case/              GetHabits, AddHabit, DeleteHabit,
+│                              UpdateHabit, UpdateHabitOrder, ImportHabits
+├── data/                      Data Layer
 │   ├── HabitDao.kt
-│   ├── HabitDatabase.kt      (v4 + MIGRATION_3_4)
+│   ├── HabitDatabase.kt       v4 + MIGRATION_3_4
 │   └── HabitRepositoryImpl.kt
-├── milestones/
-│   ├── Milestone.kt          (medicalBenefit + motivationQuote)
-│   ├── MilestoneData.kt      (substanzspezifische Listen)
-│   └── MilestoneScheduler.kt
+├── milestones/                Milestone System
+│   ├── Milestone.kt           medicalBenefit + motivationQuote
+│   ├── MilestoneData.kt       Substance-specific lists
+│   └── MilestoneScheduler.kt  WorkManager scheduling
 ├── worker/
-│   └── MilestoneWorker.kt
+│   └── MilestoneWorker.kt     @HiltWorker push notification
 ├── di/
 │   └── AppModule.kt
 └── util/
     ├── TimeUtils.kt
-    ├── MilestoneUtils.kt     (calculateProgress + MilestoneProgress)
+    ├── MilestoneUtils.kt      calculateProgress() → MilestoneProgress
+    ├── BackupManager.kt       JSON export / import
     └── AppConfig.kt
 ```
 
-## 🚀 Installation & Nutzung
+Data flows unidirectionally: **UI → ViewModel → Use Case → Repository → Room DAO → Flow → StateFlow → UI**.
 
-1. Repository klonen:
-   ```bash
-   git clone https://github.com/MartinsMikroKosmos/Nicht_Raucher_App.git
-   ```
-2. Projekt in **Android Studio** (Hedgehog oder neuer) öffnen.
-3. Gradle sync abwarten.
-4. App auf Emulator oder Gerät (Android 8.0+) starten:
-   ```bash
-   ./gradlew installDebug
-   ```
+---
 
-## 🤝 Mitwirken
+## Roadmap
 
-Beiträge sind willkommen! Wenn du Ideen für neue Features hast oder einen Bug findest:
-1. Forke das Repository.
-2. Erstelle einen neuen Branch (`git checkout -b feature/NeuesFeature`).
-3. Committe deine Änderungen (`git commit -m 'Feature hinzugefügt'`).
-4. Pushe den Branch (`git push origin feature/NeuesFeature`).
-5. Erstelle einen Pull Request.
+- [ ] Onboarding screen for first-time users
+- [ ] Home screen widget
+- [ ] Lottie confetti animation on milestone reached
+- [ ] "Buy yourself something" suggestion from saved money
+- [ ] iCloud / Google Drive cloud backup
 
-## 📄 Lizenz
+---
 
-Dieses Projekt ist unter der [MIT License](LICENSE) lizenziert.
+## Contributing
+
+Pull requests are welcome. For major changes please open an issue first.
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -m 'Add my feature'`
+4. Push the branch: `git push origin feature/my-feature`
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

@@ -1,5 +1,7 @@
 package com.example.nicht_raucher_app.ui.dashboard
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -17,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -52,6 +56,22 @@ fun DashboardScreen(
 ) {
     val habits by viewModel.habits.collectAsState()
     val tickerTime by viewModel.ticker.collectAsState()
+    val backupMessage by viewModel.backupMessage.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { viewModel.importBackup(it) }
+    }
+
+    LaunchedEffect(backupMessage) {
+        backupMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearBackupMessage()
+        }
+    }
 
     // Lokale veränderliche Liste für sofortiges Drag-Feedback
     val localList = remember { mutableStateListOf<Habit>() }
@@ -186,11 +206,37 @@ fun DashboardScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Übersicht",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.exportBackup() }) {
+                        Icon(
+                            imageVector = Icons.Filled.FileDownload,
+                            contentDescription = "Backup exportieren"
+                        )
+                    }
+                    IconButton(onClick = { importLauncher.launch("application/json") }) {
+                        Icon(
+                            imageVector = Icons.Filled.FileUpload,
+                            contentDescription = "Backup importieren"
+                        )
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddHabit) {
                 Icon(Icons.Filled.Add, contentDescription = "Sucht hinzufügen")
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -198,20 +244,13 @@ fun DashboardScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Übersicht",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(vertical = 24.dp)
-            )
-
             if (localList.isEmpty()) {
                 EmptyDashboardState()
             } else {
                 LazyColumn(
                     state = lazyListState,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 100.dp)
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
                 ) {
                     items(localList.size, key = { localList[it].id }) { index ->
                         val habit = localList[index]

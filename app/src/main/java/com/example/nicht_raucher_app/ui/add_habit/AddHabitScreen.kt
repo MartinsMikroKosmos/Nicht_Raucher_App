@@ -141,16 +141,6 @@ fun AddHabitScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Schnell-Vorschläge
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listOf("Zigaretten", "Selbstgedrehte", "Bier", "Wein", "Schnaps", "Joints")) { suggestion ->
-                    SuggestionChip(
-                        onClick = { viewModel.onUnitNameChange(suggestion) },
-                        label = { Text(suggestion) }
-                    )
-                }
-            }
-
             // --- Einheiten pro Tag ---
             OutlinedTextField(
                 value = viewModel.unitsPerDay,

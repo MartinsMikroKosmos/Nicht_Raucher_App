@@ -12,5 +12,6 @@ data class Habit(
     val costPerUnit: Double,    // Kosten pro Einheit in €
     val unitName: String,       // z.B. "Zigaretten", "Bier", "Joints", "Selbstgedrehte"
     val cardColor: Int,         // ARGB-Farbwert der Karte
-    val position: Int = 0      // Reihenfolge im Dashboard
+    val position: Int = 0,     // Reihenfolge im Dashboard
+    val substanceType: String = "CUSTOM"  // SubstanceType.name als String
 )

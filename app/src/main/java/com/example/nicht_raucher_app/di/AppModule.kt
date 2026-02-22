@@ -24,7 +24,7 @@ object AppModule {
             context,
             HabitDatabase::class.java,
             "habit_db"
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(HabitDatabase.MIGRATION_3_4).build()
     }
 
     @Provides

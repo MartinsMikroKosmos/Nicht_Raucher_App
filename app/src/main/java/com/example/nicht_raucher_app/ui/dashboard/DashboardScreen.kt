@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nicht_raucher_app.domain.Habit
 import com.example.nicht_raucher_app.util.MilestoneUtils
 import com.example.nicht_raucher_app.util.TimeUtils
+import kotlin.math.pow
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -178,8 +180,14 @@ private fun metallicBrush(baseColor: Color): Brush {
 }
 
 private fun contentColorFor(baseColor: Color): Color {
-    val luminance = 0.299f * baseColor.red + 0.587f * baseColor.green + 0.114f * baseColor.blue
-    return if (luminance > 0.45f) Color(0xFF1A1A1A) else Color.White
+    // WCAG-konformer relativer Luminanzwert (gamma-korrigiert)
+    fun linearize(c: Float) = if (c <= 0.03928f) c / 12.92f else ((c + 0.055f) / 1.055f).pow(2.4f)
+    val r = linearize(baseColor.red)
+    val g = linearize(baseColor.green)
+    val b = linearize(baseColor.blue)
+    val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
+    // Schwellwert 0.35 → bei metallischen Farben lieber Weiß wählen
+    return if (luminance > 0.35f) Color(0xFF1A1A1A) else Color.White
 }
 
 @Composable
@@ -197,8 +205,10 @@ fun HabitCard(
     val elapsedFractionalDays = (tickerTime - habit.startTimeMillis) / 86_400_000.0
     val unitsAvoided = (habit.unitsPerDay * elapsedFractionalDays).toInt()
     val moneySaved = habit.unitsPerDay * habit.costPerUnit * elapsedFractionalDays
-    val nextMilestone = remember(tickerTime) { MilestoneUtils.getNextMilestone(habit.startTimeMillis) }
-    val milestoneProgress = remember(tickerTime) { MilestoneUtils.getProgressToNext(habit.startTimeMillis) }
+    val mp = remember(tickerTime) { MilestoneUtils.calculateProgress(habit) }
+    val savedHours = mp.timeSavedMinutes / 60
+    val savedMins  = mp.timeSavedMinutes % 60
+    val timeSavedText = if (savedHours > 0) "${savedHours}h ${savedMins}min" else "${savedMins}min"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -261,12 +271,10 @@ fun HabitCard(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                HorizontalDivider(color = textColor.copy(alpha = 0.3f))
-
+                HorizontalDivider(color = textColor.copy(alpha = 0.4f))
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Stats
+                // Stats – drei Spalten
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -281,7 +289,20 @@ fun HabitCard(
                         Text(
                             text = "${habit.unitName} vermieden",
                             style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.75f)
+                            color = textColor.copy(alpha = 0.90f)
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = timeSavedText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = textColor
+                        )
+                        Text(
+                            text = "Zeit gewonnen",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor.copy(alpha = 0.90f)
                         )
                     }
                     Column(horizontalAlignment = Alignment.End) {
@@ -294,33 +315,57 @@ fun HabitCard(
                         Text(
                             text = "gespart",
                             style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.75f)
+                            color = textColor.copy(alpha = 0.90f)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = textColor.copy(alpha = 0.3f))
+                HorizontalDivider(color = textColor.copy(alpha = 0.4f))
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (nextMilestone != null) {
+                // Letzter erreichter Milestone → Medical Benefit
+                mp.lastReachedMilestone?.let { last ->
                     Text(
-                        text = "Nächster Meilenstein: ${nextMilestone.title}",
+                        text = "✅ ${last.title}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.8f)
+                        fontWeight = FontWeight.Bold,
+                        color = textColor.copy(alpha = 0.9f)
+                    )
+                    Text(
+                        text = last.medicalBenefit,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.90f)
                     )
                     Spacer(modifier = Modifier.height(6.dp))
+                }
+
+                // Nächster Milestone + Fortschrittsbalken + Motivationsspruch
+                if (mp.nextMilestone != null) {
+                    Text(
+                        text = "🎯 Nächstes Ziel: ${mp.nextMilestone.title}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     LinearProgressIndicator(
-                        progress = { milestoneProgress },
+                        progress = { mp.progress },
                         modifier = Modifier.fillMaxWidth(),
                         color = textColor.copy(alpha = 0.9f),
-                        trackColor = textColor.copy(alpha = 0.25f)
+                        trackColor = textColor.copy(alpha = 0.35f)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "💬 ${mp.nextMilestone.motivationQuote}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.90f)
                     )
                 } else {
                     Text(
                         text = "Alle Meilensteine erreicht! 👑",
                         style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.8f)
+                        color = textColor.copy(alpha = 0.90f)
                     )
                 }
             }
@@ -342,7 +387,12 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
                 text = targetValue.toString().padStart(2, '0'),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 26.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.ExtraBold,
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.3f),
+                        offset = Offset(0f, 1f),
+                        blurRadius = 4f
+                    )
                 ),
                 color = textColor
             )
@@ -350,7 +400,7 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = textColor.copy(alpha = 0.75f)
+            color = textColor.copy(alpha = 0.90f)
         )
     }
 }

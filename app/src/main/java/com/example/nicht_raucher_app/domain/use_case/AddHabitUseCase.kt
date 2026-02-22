@@ -15,7 +15,8 @@ class AddHabitUseCase @Inject constructor(
         costPerUnit: Double,
         unitName: String,
         cardColor: Int,
-        startTimeMillis: Long = System.currentTimeMillis()
+        startTimeMillis: Long = System.currentTimeMillis(),
+        substanceType: String = "CUSTOM"
     ) {
         val newHabit = Habit(
             label = label,
@@ -23,7 +24,8 @@ class AddHabitUseCase @Inject constructor(
             unitsPerDay = unitsPerDay,
             costPerUnit = costPerUnit,
             unitName = unitName,
-            cardColor = cardColor
+            cardColor = cardColor,
+            substanceType = substanceType
         )
         val habitId = repository.insertHabit(newHabit)
         milestoneScheduler.scheduleMilestonesForHabit(habitId.toInt(), label, startTimeMillis)

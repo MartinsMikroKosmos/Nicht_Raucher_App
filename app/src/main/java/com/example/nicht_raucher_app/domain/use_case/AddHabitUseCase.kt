@@ -2,10 +2,12 @@ package com.example.nicht_raucher_app.domain.use_case
 
 import com.example.nicht_raucher_app.domain.Habit
 import com.example.nicht_raucher_app.domain.Repository
+import com.example.nicht_raucher_app.milestones.MilestoneScheduler
 import javax.inject.Inject
 
 class AddHabitUseCase @Inject constructor(
-    private val repository: Repository
+    private val repository: Repository,
+    private val milestoneScheduler: MilestoneScheduler
 ) {
     suspend operator fun invoke(
         label: String,
@@ -23,6 +25,7 @@ class AddHabitUseCase @Inject constructor(
             unitName = unitName,
             cardColor = cardColor
         )
-        repository.insertHabit(newHabit)
+        val habitId = repository.insertHabit(newHabit)
+        milestoneScheduler.scheduleMilestonesForHabit(habitId.toInt(), label, startTimeMillis)
     }
 }

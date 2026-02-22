@@ -1,4 +1,4 @@
-# 🧠 Abstinenz Tracker App
+# 🧠 PureProgress
 
 Ein moderner Begleiter für jeden Abstinenz-Prozess. Die App hilft Nutzern dabei, jede Art von Sucht zu überwinden – Zigaretten, Alkohol, Cannabis, Glücksspiel und mehr – und macht Fortschritte durch positive Bestärkung sichtbar.
 

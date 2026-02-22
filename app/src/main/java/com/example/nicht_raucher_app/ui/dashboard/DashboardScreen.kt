@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nicht_raucher_app.domain.Habit
+import com.example.nicht_raucher_app.util.MilestoneUtils
 import com.example.nicht_raucher_app.util.TimeUtils
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -196,6 +197,8 @@ fun HabitCard(
     val elapsedFractionalDays = (tickerTime - habit.startTimeMillis) / 86_400_000.0
     val unitsAvoided = (habit.unitsPerDay * elapsedFractionalDays).toInt()
     val moneySaved = habit.unitsPerDay * habit.costPerUnit * elapsedFractionalDays
+    val nextMilestone = remember(tickerTime) { MilestoneUtils.getNextMilestone(habit.startTimeMillis) }
+    val milestoneProgress = remember(tickerTime) { MilestoneUtils.getProgressToNext(habit.startTimeMillis) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -294,6 +297,31 @@ fun HabitCard(
                             color = textColor.copy(alpha = 0.75f)
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = textColor.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (nextMilestone != null) {
+                    Text(
+                        text = "Nächster Meilenstein: ${nextMilestone.title}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.8f)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    LinearProgressIndicator(
+                        progress = { milestoneProgress },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = textColor.copy(alpha = 0.9f),
+                        trackColor = textColor.copy(alpha = 0.25f)
+                    )
+                } else {
+                    Text(
+                        text = "Alle Meilensteine erreicht! 👑",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.8f)
+                    )
                 }
             }
         }

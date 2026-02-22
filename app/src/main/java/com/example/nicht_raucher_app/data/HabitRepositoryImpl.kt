@@ -19,4 +19,6 @@ class HabitRepositoryImpl @Inject constructor(
             dao.updateHabit(habit.copy(position = index))
         }
     }
+
+    override suspend fun updateHabit(habit: Habit) = dao.updateHabit(habit)
 }

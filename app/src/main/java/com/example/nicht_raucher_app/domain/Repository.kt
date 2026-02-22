@@ -7,4 +7,5 @@ interface Repository {
     suspend fun insertHabit(habit: Habit): Long
     suspend fun deleteHabit(habit: Habit)
     suspend fun updateHabitOrder(orderedHabits: List<Habit>)
+    suspend fun updateHabit(habit: Habit)
 }

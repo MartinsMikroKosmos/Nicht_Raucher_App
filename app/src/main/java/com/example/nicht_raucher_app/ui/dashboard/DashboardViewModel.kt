@@ -6,6 +6,7 @@ import com.example.nicht_raucher_app.domain.Habit
 import com.example.nicht_raucher_app.domain.use_case.DeleteHabitUseCase
 import com.example.nicht_raucher_app.domain.use_case.GetHabitsUseCase
 import com.example.nicht_raucher_app.domain.use_case.UpdateHabitOrderUseCase
+import com.example.nicht_raucher_app.domain.use_case.UpdateHabitUseCase
 import com.example.nicht_raucher_app.util.AppConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     private val getHabitsUseCase: GetHabitsUseCase,
     private val deleteHabitUseCase: DeleteHabitUseCase,
-    private val updateHabitOrderUseCase: UpdateHabitOrderUseCase
+    private val updateHabitOrderUseCase: UpdateHabitOrderUseCase,
+    private val updateHabitUseCase: UpdateHabitUseCase
 ) : ViewModel() {
 
     val habits: StateFlow<List<Habit>> = getHabitsUseCase()
@@ -49,5 +51,9 @@ class DashboardViewModel @Inject constructor(
 
     fun updateOrder(orderedHabits: List<Habit>) {
         viewModelScope.launch { updateHabitOrderUseCase(orderedHabits) }
+    }
+
+    fun updateHabit(habit: Habit) {
+        viewModelScope.launch { updateHabitUseCase(habit) }
     }
 }

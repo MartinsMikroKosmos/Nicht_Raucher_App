@@ -1,28 +1,43 @@
 package com.example.nicht_raucher_app.ui.dashboard
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nicht_raucher_app.domain.Habit
+import com.example.nicht_raucher_app.domain.SubstanceType
+import com.example.nicht_raucher_app.ui.add_habit.metallicPresets
 import com.example.nicht_raucher_app.util.MilestoneUtils
 import com.example.nicht_raucher_app.util.TimeUtils
 import kotlin.math.pow
@@ -55,6 +70,119 @@ fun DashboardScreen(
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         localList.add(to.index, localList.removeAt(from.index))
         viewModel.updateOrder(localList.toList())
+    }
+
+    var habitToDelete by remember { mutableStateOf<Habit?>(null) }
+    var habitToEdit by remember { mutableStateOf<Habit?>(null) }
+    var expandedIds by remember { mutableStateOf(setOf<Int>()) }
+
+    // --- Lösch-Bestätigungsdialog ---
+    habitToDelete?.let { habit ->
+        AlertDialog(
+            onDismissRequest = { habitToDelete = null },
+            icon = { Text("🗑️", style = MaterialTheme.typography.headlineMedium) },
+            title = { Text("Eintrag löschen?") },
+            text = {
+                Text(
+                    "\"${habit.label}\" und alle zugehörigen Daten werden " +
+                    "unwiderruflich gelöscht. Fortschritt und Meilensteine gehen verloren."
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteHabit(habit)
+                        localList.remove(habit)
+                        habitToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("Löschen") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { habitToDelete = null }) {
+                    Text("Abbrechen")
+                }
+            }
+        )
+    }
+
+    // --- Edit-BottomSheet ---
+    habitToEdit?.let { habit ->
+        var editLabel by remember(habit.id) { mutableStateOf(habit.label) }
+        var editColor by remember(habit.id) { mutableIntStateOf(habit.cardColor) }
+
+        ModalBottomSheet(onDismissRequest = { habitToEdit = null }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Text(
+                    text = "Eintrag bearbeiten",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                OutlinedTextField(
+                    value = editLabel,
+                    onValueChange = { editLabel = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Text(
+                    text = "Kartenfarbe",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(metallicPresets) { (colorInt, name) ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(colorInt))
+                                    .then(
+                                        if (editColor == colorInt)
+                                            Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                        else
+                                            Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                                    )
+                                    .clickable { editColor = colorInt }
+                            )
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = if (editColor == colorInt) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        if (editLabel.isNotBlank()) {
+                            val updated = habit.copy(label = editLabel.trim(), cardColor = editColor)
+                            viewModel.updateHabit(updated)
+                            val idx = localList.indexOfFirst { it.id == habit.id }
+                            if (idx >= 0) localList[idx] = updated
+                            habitToEdit = null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = editLabel.isNotBlank()
+                ) { Text("Speichern") }
+            }
+        }
     }
 
     Scaffold(
@@ -91,9 +219,8 @@ fun DashboardScreen(
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        viewModel.deleteHabit(habit)
-                                        localList.remove(habit)
-                                        true
+                                        habitToDelete = habit
+                                        false
                                     } else false
                                 }
                             )
@@ -134,7 +261,15 @@ fun DashboardScreen(
                                 HabitCard(
                                     habit = habit,
                                     tickerTime = tickerTime,
+                                    isExpanded = habit.id in expandedIds,
+                                    onToggleExpand = {
+                                        expandedIds = if (habit.id in expandedIds)
+                                            expandedIds - habit.id
+                                        else
+                                            expandedIds + habit.id
+                                    },
                                     isDragging = isDragging,
+                                    onEditRequest = { habitToEdit = habit },
                                     dragHandle = {
                                         Icon(
                                             imageVector = Icons.Filled.Menu,
@@ -180,193 +315,256 @@ private fun metallicBrush(baseColor: Color): Brush {
 }
 
 private fun contentColorFor(baseColor: Color): Color {
-    // WCAG-konformer relativer Luminanzwert (gamma-korrigiert)
     fun linearize(c: Float) = if (c <= 0.03928f) c / 12.92f else ((c + 0.055f) / 1.055f).pow(2.4f)
     val r = linearize(baseColor.red)
     val g = linearize(baseColor.green)
     val b = linearize(baseColor.blue)
     val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
-    // Schwellwert 0.35 → bei metallischen Farben lieber Weiß wählen
     return if (luminance > 0.35f) Color(0xFF1A1A1A) else Color.White
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HabitCard(
     habit: Habit,
     tickerTime: Long,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
     isDragging: Boolean = false,
-    dragHandle: (@Composable () -> Unit)? = null
+    dragHandle: (@Composable () -> Unit)? = null,
+    onEditRequest: () -> Unit = {}
 ) {
     val duration = TimeUtils.getElapsedDuration(habit.startTimeMillis)
     val baseColor = Color(habit.cardColor)
     val brush = metallicBrush(baseColor)
     val textColor = contentColorFor(baseColor)
 
-    val elapsedFractionalDays = (tickerTime - habit.startTimeMillis) / 86_400_000.0
-    val unitsAvoided = (habit.unitsPerDay * elapsedFractionalDays).toInt()
-    val moneySaved = habit.unitsPerDay * habit.costPerUnit * elapsedFractionalDays
-    val mp = remember(tickerTime) { MilestoneUtils.calculateProgress(habit) }
-    val savedHours = mp.timeSavedMinutes / 60
-    val savedMins  = mp.timeSavedMinutes % 60
-    val timeSavedText = if (savedHours > 0) "${savedHours}h ${savedMins}min" else "${savedMins}min"
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "chevron"
+    )
+
+    val substanceEmoji = try {
+        SubstanceType.valueOf(habit.substanceType).emoji
+    } catch (_: IllegalArgumentException) { "✏️" }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {},
+                onLongClick = { onEditRequest() }
+            ),
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isDragging) 12.dp else 6.dp
+            defaultElevation = if (isDragging) 12.dp else 4.dp
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(brush = brush)
-                .padding(20.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Column {
-                // Header: Label + Badge + Drag Handle
+
+                // ── COLLAPSED HEADER (immer sichtbar) ────────────────────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = habit.label,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        modifier = Modifier.weight(1f)
-                    )
+                    // Emoji + Name
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = Color.Black.copy(alpha = 0.25f)
+                        Text(
+                            text = substanceEmoji,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = habit.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = textColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    // Kompakt-Zeit (nur wenn collapsed)
+                    if (!isExpanded) {
+                        Text(
+                            text = "${duration.days}T " +
+                                   "${duration.hours.toString().padStart(2, '0')}h " +
+                                   "${duration.minutes.toString().padStart(2, '0')}m",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = textColor.copy(alpha = 0.90f),
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+
+                    // Chevron + Drag Handle
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            onClick = onToggleExpand,
+                            modifier = Modifier.size(36.dp)
                         ) {
-                            Text(
-                                text = "Aktiv",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = if (isExpanded) "Einklappen" else "Aufklappen",
+                                tint = textColor.copy(alpha = 0.80f),
+                                modifier = Modifier.rotate(chevronRotation)
                             )
                         }
                         if (dragHandle != null) dragHandle()
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Zeit-Ticker
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    TimeDisplayUnit(duration.days, "Tage", textColor)
-                    TimeDisplayUnit(duration.hours, "Std", textColor)
-                    TimeDisplayUnit(duration.minutes, "Min", textColor)
-                    TimeDisplayUnit(duration.seconds, "Sek", textColor)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = textColor.copy(alpha = 0.4f))
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Stats – drei Spalten
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                // ── EXPANDED INHALT (animiert) ───────────────────────────
+                AnimatedVisibility(
+                    visible = isExpanded,
+                    enter = expandVertically(animationSpec = tween(300)) + fadeIn(tween(300)),
+                    exit  = shrinkVertically(animationSpec = tween(300)) + fadeOut(tween(200))
                 ) {
                     Column {
-                        Text(
-                            text = "$unitsAvoided",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = textColor
-                        )
-                        Text(
-                            text = "${habit.unitName} vermieden",
+                        Spacer(modifier = Modifier.height(12.dp))
+                        HorizontalDivider(color = textColor.copy(alpha = 0.3f))
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Ticker
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TimeDisplayUnit(duration.days,    "Tage", textColor)
+                            TimeDisplayUnit(duration.hours,   "Std",  textColor)
+                            TimeDisplayUnit(duration.minutes, "Min",  textColor)
+                            TimeDisplayUnit(duration.seconds, "Sek",  textColor)
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        HorizontalDivider(color = textColor.copy(alpha = 0.3f))
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Stats
+                        val elapsedDays = (tickerTime - habit.startTimeMillis) / 86_400_000.0
+                        val unitsAvoided = (habit.unitsPerDay * elapsedDays).toInt()
+                        val moneySaved   = habit.unitsPerDay * habit.costPerUnit * elapsedDays
+                        val mp = MilestoneUtils.calculateProgress(habit)
+                        val timeSavedText = run {
+                            val d = mp.timeSavedMinutes / (60 * 24)
+                            val h = (mp.timeSavedMinutes % (60 * 24)) / 60
+                            val m = mp.timeSavedMinutes % 60
+                            when {
+                                d >= 1  -> "${d}T ${h}h"
+                                h >= 1  -> "${h}h ${m}min"
+                                else    -> "${m}min"
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = "$unitsAvoided",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = textColor
+                                )
+                                Text(
+                                    text = "${habit.unitName} vermieden",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = textColor.copy(alpha = 0.90f)
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = timeSavedText,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = textColor
+                                )
+                                Text(
+                                    text = "Zeit gewonnen",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = textColor.copy(alpha = 0.90f)
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "%.2f €".format(moneySaved),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = textColor
+                                )
+                                Text(
+                                    text = "gespart",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = textColor.copy(alpha = 0.90f)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        HorizontalDivider(color = textColor.copy(alpha = 0.3f))
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Letzter erreichter Milestone
+                        mp.lastReachedMilestone?.let { last ->
+                            Text(
+                                text = "✅ ${last.title}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor.copy(alpha = 0.9f)
+                            )
+                            Text(
+                                text = last.medicalBenefit,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = textColor.copy(alpha = 0.85f)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+
+                        // Nächster Milestone + Fortschrittsbalken + Motivationsspruch
+                        mp.nextMilestone?.let { next ->
+                            Text(
+                                text = "🎯 Nächstes Ziel: ${next.title}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LinearProgressIndicator(
+                                progress = { mp.progress },
+                                modifier = Modifier.fillMaxWidth(),
+                                color = textColor.copy(alpha = 0.9f),
+                                trackColor = textColor.copy(alpha = 0.30f)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "💬 ${next.motivationQuote}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = textColor.copy(alpha = 0.85f),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } ?: Text(
+                            text = "Alle Meilensteine erreicht! 👑",
                             style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.90f)
+                            color = textColor.copy(alpha = 0.85f)
                         )
                     }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = timeSavedText,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = textColor
-                        )
-                        Text(
-                            text = "Zeit gewonnen",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.90f)
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "%.2f €".format(moneySaved),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = textColor
-                        )
-                        Text(
-                            text = "gespart",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.90f)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = textColor.copy(alpha = 0.4f))
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Letzter erreichter Milestone → Medical Benefit
-                mp.lastReachedMilestone?.let { last ->
-                    Text(
-                        text = "✅ ${last.title}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor.copy(alpha = 0.9f)
-                    )
-                    Text(
-                        text = last.medicalBenefit,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.90f)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
-
-                // Nächster Milestone + Fortschrittsbalken + Motivationsspruch
-                if (mp.nextMilestone != null) {
-                    Text(
-                        text = "🎯 Nächstes Ziel: ${mp.nextMilestone.title}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    LinearProgressIndicator(
-                        progress = { mp.progress },
-                        modifier = Modifier.fillMaxWidth(),
-                        color = textColor.copy(alpha = 0.9f),
-                        trackColor = textColor.copy(alpha = 0.35f)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "💬 ${mp.nextMilestone.motivationQuote}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.90f)
-                    )
-                } else {
-                    Text(
-                        text = "Alle Meilensteine erreicht! 👑",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.90f)
-                    )
                 }
             }
         }

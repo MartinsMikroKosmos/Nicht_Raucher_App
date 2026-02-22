@@ -16,16 +16,33 @@ import javax.inject.Inject
 
 // Voreingestellte metallische Farben (ARGB)
 val metallicPresets = listOf(
+    // Klassische Metalle
     0xFFC0C0C0.toInt() to "Silber",
     0xFFFFD700.toInt() to "Gold",
     0xFFCD7F32.toInt() to "Bronze",
     0xFFB87333.toInt() to "Kupfer",
     0xFFB76E79.toInt() to "Rosé",
+    // Blau-Töne
     0xFF4682B4.toInt() to "Stahlblau",
-    0xFF7B68EE.toInt() to "Lila",
+    0xFF1E3A5F.toInt() to "Nachtblau",
+    0xFF00BCD4.toInt() to "Cyan",
+    // Grün-Töne
     0xFF50C878.toInt() to "Smaragd",
+    0xFF2E7D32.toInt() to "Waldgrün",
+    0xFF80CBC4.toInt() to "Mintgrün",
+    // Lila / Pink
+    0xFF7B68EE.toInt() to "Lila",
+    0xFF6A1B9A.toInt() to "Violett",
+    0xFFE91E63.toInt() to "Magenta",
+    // Rot-Töne
     0xFFCC3333.toInt() to "Rubin",
+    0xFF8B0000.toInt() to "Dunkelrot",
+    // Warme Töne
     0xFF20B2AA.toInt() to "Türkis",
+    0xFFFF8C00.toInt() to "Bernstein",
+    0xFF5D4037.toInt() to "Mokka",
+    // Dunkel
+    0xFF37474F.toInt() to "Anthrazit",
 )
 
 @HiltViewModel

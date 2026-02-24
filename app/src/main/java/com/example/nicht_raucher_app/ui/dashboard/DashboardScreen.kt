@@ -415,51 +415,49 @@ fun HabitCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(brush = brush)
-                .padding(horizontal = 16.dp, vertical = 18.dp)
+                .padding(horizontal = 20.dp, vertical = if (isExpanded) 18.dp else 32.dp)
         ) {
             Column {
 
                 // ── COLLAPSED HEADER (immer sichtbar) ────────────────────
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Emoji + Name
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    // Emoji (links, vertikal zentriert)
+                    Text(
+                        text = substanceEmoji,
+                        fontSize = 40.sp,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
+                    // Label + Timer – horizontal zentriert
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = substanceEmoji,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
                             text = habit.label,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold,
                             color = textColor,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
                         )
+                        if (!isExpanded) {
+                            Text(
+                                text = "${duration.days}T " +
+                                       "${duration.hours.toString().padStart(2, '0')}h " +
+                                       "${duration.minutes.toString().padStart(2, '0')}m",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor.copy(alpha = 0.80f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
-                    // Kompakt-Zeit (nur wenn collapsed)
-                    if (!isExpanded) {
-                        Text(
-                            text = "${duration.days}T " +
-                                   "${duration.hours.toString().padStart(2, '0')}h " +
-                                   "${duration.minutes.toString().padStart(2, '0')}m",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = textColor.copy(alpha = 0.90f),
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                    }
-
-                    // Chevron + Drag Handle
+                    // Chevron + Drag Handle (rechts)
                     Row(
+                        modifier = Modifier.align(Alignment.CenterEnd),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -527,39 +525,39 @@ fun HabitCard(
                             Column {
                                 Text(
                                     text = "$unitsAvoided",
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "${habit.unitName} vermieden",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = timeSavedText,
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "Zeit gewonnen",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = "%.2f €".format(moneySaved),
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = textColor
                                 )
                                 Text(
                                     text = "gespart",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor.copy(alpha = 0.90f)
                                 )
                             }
@@ -573,13 +571,13 @@ fun HabitCard(
                         mp.lastReachedMilestone?.let { last ->
                             Text(
                                 text = "✅ ${last.title}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = textColor.copy(alpha = 0.9f)
                             )
                             Text(
                                 text = last.medicalBenefit,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor.copy(alpha = 0.85f)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
@@ -589,7 +587,7 @@ fun HabitCard(
                         mp.nextMilestone?.let { next ->
                             Text(
                                 text = "🎯 Nächstes Ziel: ${next.title}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = textColor
                             )
@@ -603,14 +601,14 @@ fun HabitCard(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "💬 ${next.motivationQuote}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor.copy(alpha = 0.85f),
-                                maxLines = 2,
+                                maxLines = 3,
                                 overflow = TextOverflow.Ellipsis
                             )
                         } ?: Text(
                             text = "Alle Meilensteine erreicht! 👑",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = textColor.copy(alpha = 0.85f)
                         )
                     }
@@ -633,7 +631,7 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
             Text(
                 text = targetValue.toString().padStart(2, '0'),
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 34.sp,
+                    fontSize = 42.sp,
                     fontWeight = FontWeight.ExtraBold,
                     shadow = Shadow(
                         color = Color.Black.copy(alpha = 0.3f),
@@ -646,7 +644,7 @@ fun TimeDisplayUnit(value: Long, label: String, textColor: Color) {
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodyMedium,
             color = textColor.copy(alpha = 0.90f)
         )
     }
